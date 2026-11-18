@@ -25,7 +25,7 @@ Paths are relative to the repository root. Each story has an independent verific
 
 - [x] T007 [P] [US2] Implement account-free locked restore, Release build and test, GUI harness compilation, publish and executable smoke checks in `scripts/verify.ps1`.
 - [x] T008 [US2] Configure read-only pushes and proposed PR merge checks in `.github/workflows/`. Identify each tested commit, including intermediate failures and new branches.
-- [ ] T009 [P] [US2] Document the fork, test and review workflow in `CONTRIBUTING.md`. Set up public issue and PR templates in `.github/` and a working private advisory route in `SECURITY.md`.
+- [x] T009 [P] [US2] Document the fork, test and review workflow in `CONTRIBUTING.md`. Set up public issue and PR templates in `.github/` and a working private advisory route in `SECURITY.md`.
 
 ## Phase 5 — US3, publish a version (P3)
 
