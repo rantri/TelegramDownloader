@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
+    <TargetFramework>net11.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>TelegramDownloader.GuiSmoke</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/TelegramDownloader.Core/TelegramDownloader.Core.csproj" />
+    <Compile Include="../../src/TelegramDownloader.App/MainForm.cs" Link="App/MainForm.cs" />
+    <Compile Include="../../src/TelegramDownloader.App/PromptDialog.cs" Link="App/PromptDialog.cs" />
+  </ItemGroup>
+</Project>

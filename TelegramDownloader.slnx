@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/TelegramDownloader.Core/TelegramDownloader.Core.csproj" />
+  <Project Path="src/TelegramDownloader.App/TelegramDownloader.App.csproj" />
+  <Project Path="tests/TelegramDownloader.Tests/TelegramDownloader.Tests.csproj" />
+</Solution>

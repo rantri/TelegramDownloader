@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    if: github.event.deleted != true
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.select.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: select
+        run: python3 .github/scripts/ci-matrix.py
+
+  verify:
+    name: Verify ${{ matrix.label }}
+    needs: discover
+    runs-on: windows-2025
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        if: matrix.sdks != ''
+        with:
+          dotnet-version: ${{ matrix.sdks }}
+      - name: Verify each revision
+        env:
+          REVISIONS: ${{ toJSON(matrix.revisions) }}
+          INVALID_SDK_REVISIONS: ${{ toJSON(matrix.invalid) }}
+        run: ./.github/scripts/check-revisions.ps1
+
+  passed:
+    name: CI passed
+    if: always() && github.event.deleted != true
+    needs: [discover, verify]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all revision checks
+        env:
+          DISCOVERY: ${{ needs.discover.result }}
+          VERIFICATION: ${{ needs.verify.result }}
+        run: test "$DISCOVERY" = success && test "$VERIFICATION" = success

@@ -1,0 +1,109 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  candidate:
+    name: Verify and package
+    if: github.event.deleted != true
+    runs-on: windows-2025
+    outputs:
+      commit: ${{ steps.package.outputs.commit }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+      - name: Verify tagged revision
+        run: ./scripts/verify.ps1
+      - name: Stage verified release files
+        id: package
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          ./scripts/package.ps1 -Tag $env:TAG
+          $notes = "docs/releases/$($env:TAG.Substring(1)).md"
+          if (Test-Path -LiteralPath $notes -PathType Leaf) {
+            Copy-Item -LiteralPath $notes -Destination artifacts/release/NOTES.md
+          }
+          "commit=$(git rev-parse HEAD)" >> $env:GITHUB_OUTPUT
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-candidate
+          path: artifacts/release/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+          overwrite: true
+
+  publish:
+    name: Publish verified assets
+    needs: candidate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-candidate
+          path: candidate
+      - name: Complete the draft release
+        working-directory: candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+          COMMIT: ${{ needs.candidate.outputs.commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
+          archive="TelegramDownloader-${TAG#v}-win-x64.zip"
+          # Validate a single expected digest and filename before publishing either asset.
+          [[ "$(tr -d '\r' < SHA256SUMS.txt)" == "$(sha256sum "$archive")" ]]
+          verify_tag() {
+            local actual
+            actual=$(gh api "repos/$GH_REPO/commits/refs/tags/$TAG" --jq .sha)
+            [[ "$actual" == "$COMMIT" ]] || { echo "::error::Tag no longer identifies $COMMIT"; return 1; }
+          }
+          release_info() {
+            gh release view "$TAG" --json isDraft,assets
+          }
+          verify_tag
+          if ! release=$(release_info); then
+            notes=(--generate-notes)
+            if [[ -s NOTES.md ]]; then notes=(--notes-file NOTES.md); fi
+            gh release create "$TAG" --draft --verify-tag --title "TelegramDownloader $TAG" "${notes[@]}"
+            release=$(release_info)
+          fi
+          if [[ "$(jq -r .isDraft <<<"$release")" != true ]]; then
+            echo "::error::Release $TAG is already public. Its assets were preserved."
+            exit 1
+          fi
+
+          for asset in "$archive" SHA256SUMS.txt; do
+            digest="sha256:$(sha256sum "$asset" | cut -d' ' -f1)"
+            existing=$(jq -r --arg name "$asset" '.assets[] | select(.name == $name) | .digest // "unknown"' <<<"$release")
+            if [[ -z "$existing" ]]; then
+              gh release upload "$TAG" "$asset"
+            elif [[ "$existing" != "$digest" ]]; then
+              echo "::error::Draft asset $asset differs. Inspect and discard the unpublished draft before retrying."
+              exit 1
+            fi
+          done
+          verify_tag
+          release_info | jq -e --arg archive "$archive" '
+            .isDraft and ([.assets[].name] | sort) == ([$archive, "SHA256SUMS.txt"] | sort)
+            and all(.assets[]; .state == "uploaded")'
+          gh release edit "$TAG" --draft=false

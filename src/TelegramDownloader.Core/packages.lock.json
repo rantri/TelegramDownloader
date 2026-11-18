@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net11.0-windows7.0": {
+      "Microsoft.NET.ILLink.Tasks": {
+        "type": "Direct",
+        "requested": "[11.0.0, )",
+        "resolved": "11.0.0",
+        "contentHash": "gK2aq4XvChj5kvozpPHrkfKkr7zc5Z4xoTrJb4GPZzDEPMlCk0TX632bwY3LsWcX2UVcVRQBBGzsBGC2lq6YhA=="
+      },
+      "System.Security.Cryptography.ProtectedData": {
+        "type": "Direct",
+        "requested": "[11.0.0, )",
+        "resolved": "11.0.0",
+        "contentHash": "iS9iyAMwLDPFBzTdcREDkzRBYmwy7aENYl7EXxAvnNJNCbl7+UVRgJfWaVLtVjSeDmT3JIItgGODmuAPljXFww=="
+      },
+      "WTelegramClient": {
+        "type": "Direct",
+        "requested": "[4.4.10, )",
+        "resolved": "4.4.10",
+        "contentHash": "1L/3ntiWiKnD743XMjthJIdL01WpHTE/WlRKqpF3dAorGgsabU+EZpq2j9q7H/Yb0PfXUoMaWxkrYYSg0brm0Q=="
+      }
+    },
+    "net11.0-windows7.0/win-x64": {}
+  }
+}
