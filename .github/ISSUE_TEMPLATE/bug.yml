@@ -1,0 +1,28 @@
+name: Bug report
+description: Report a reproducible problem using synthetic examples
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a security issue, [send a private report](https://github.com/rantri/TelegramDownloader/security/advisories/new). Use synthetic post links and filenames. Omit credentials, session data and private media.
+  - type: input
+    id: environment
+    attributes:
+      label: App version and Windows version
+      description: Run TelegramDownloader.exe --version to find the app version.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include whether you used the desktop window or command line.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual results
+    validations:
+      required: true
