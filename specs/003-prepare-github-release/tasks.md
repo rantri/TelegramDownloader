@@ -36,8 +36,8 @@ Paths are relative to the repository root. Each story has an independent verific
 
 ## Phase 6 — Polish and cross-cutting verification
 
-- [ ] T012 Verify clean checkout, local tag rejection and asset contents against `specs/003-prepare-github-release/quickstart.md`.
-- [ ] T013 Push the sanitized baseline, verify hosted batch and PR checks, and verify the tagged public download. Record evidence and limitations in `specs/003-prepare-github-release/validation.md`.
+- [x] T012 Verify clean checkout, local tag rejection and asset contents against `specs/003-prepare-github-release/quickstart.md`.
+- [x] T013 Push the sanitized baseline, verify hosted batch and PR checks, and verify the tagged public download. Record evidence and limitations in `specs/003-prepare-github-release/validation.md`.
 
 ## Dependencies and execution order
 
